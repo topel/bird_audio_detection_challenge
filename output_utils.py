@@ -51,7 +51,7 @@ def read_target_file(filename, tdic, hasGT):
     such as ff1010bird_metadata.csv
     :param filename: GT file path
     :param tdic: empty dictionary to be filled, keys=file ids, values=GT targets
-    :return: nothing my dear
+    :return:
     """
     passFirstLine=True
     with open(filename, 'r') as fh:
@@ -81,7 +81,7 @@ def save_filelist(fname, feature_type, shuffled_indices, noms, target_dic, subse
     :param train_nb_samples:
     :param valid_nb_samples:
     :param test_nb_samples:
-    :return: nothing my dear
+    :return:
     """
     import csv
     if several_subsets_in_a_single_file:
@@ -123,7 +123,7 @@ def save_filelist_sliced_features(corpusdir, feature_type, shuffled_indices, nom
     :param train_nb_samples:
     :param valid_nb_samples:
     :param test_nb_samples:
-    :return: nothing my dear
+    :return:
     """
     import csv
     if subset == 'Train':

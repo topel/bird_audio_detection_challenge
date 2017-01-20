@@ -127,147 +127,6 @@ def test_model(dataset, train_mean, train_std, center, divideStd, NB_CLASSES, fe
 
     return err_tot, acc_tot, batches, pred_probs, pred, gt_labels
 
-def build_cnn(input_var=None, nbChannels=1, contextSize=200, featureSize = 56, nb_classes = 2, useBN=True, feature_type='fbank'):
-    # As a third model, we'll create a CNN of two convolution + pooling stages
-    # and a fully-connected hidden layer in front of the output layer.
-
-    # Input layer, as usual:
-    l_in = lasagne.layers.InputLayer(shape=(None, nbChannels, contextSize, featureSize),
-                                        input_var=input_var)
-
-
-    # This time we do not apply input dropout, as it tends to work less well
-    # for convolutional layers.
-
-    # Convolutional layer with 32 kernels of size 3x5. Strided and padded
-    # convolutions are supported as well; see the docstring.
-    print 'INFO: use BN = ', useBN
-    print 'INFO: input layer: ', l_in.output_shape
-
-    if feature_type == 'fbank':
-        first_filter_size = 3
-        first_nb_filters = 32
-        pool_size = 2
-        second_nb_filters = 107
-        second_filter_size = 3
-        third_nb_filters = 182
-        third_filter_size = 3
-        fourth_nb_filters = 257
-        fourth_filter_size = 3
-        pad='same'
-    elif feature_type == 'fft':
-        first_filter_size = (5, featureSize)
-        first_nb_filters = 128
-        second_nb_filters = 256
-        second_filter_size = (5, 1)
-        second_pool_size = (1, 1)
-        pad='valid'
-    elif feature_type == 'slicedfft':
-        # first_filter_size = (2, 401)
-        # first_nb_filters = 32
-        # second_nb_filters = 256
-        # second_filter_size = 2
-        # second_pool_size = 2
-        # pad='valid'
-        first_filter_size = (2, 3)
-        first_nb_filters = 32
-        second_nb_filters = 64
-        second_filter_size = (3,4)
-        second_pool_size = 2
-        pad='valid'
-
-    if useBN:
-        l_conv1 = lasagne.layers.batch_norm(
-                lasagne.layers.Conv2DLayer(
-                l_in, num_filters=first_nb_filters, filter_size=first_filter_size, pad=pad, flip_filters=False,
-                nonlinearity=None,
-                W=lasagne.init.GlorotUniform())
-        )
-    else:
-        l_conv1 = lasagne.layers.Conv2DLayer(
-                l_in, num_filters=first_nb_filters, filter_size=first_filter_size, pad=pad,
-                nonlinearity=None,
-                W=lasagne.init.GlorotUniform()
-        )
-
-    # Expert note: Lasagne provides alternative convolutional layers that
-    # override Theano's choice of which implementation to use; for details
-    # please see http://lasagne.readthedocs.org/en/latest/user/tutorial.html.
-
-    print('INFO: first conv layer: ', l_conv1.output_shape)
-
-    if useBN:
-        l_conv2 = lasagne.layers.batch_norm(
-                lasagne.layers.Conv2DLayer(
-                l_conv1, num_filters=second_nb_filters, filter_size=second_filter_size, pad=pad, stride=1, flip_filters=False,
-                # l_mp1, num_filters=64, filter_size=(2, 3),
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform())
-        )
-    else:
-        l_conv2 = lasagne.layers.Conv2DLayer(
-                l_conv1, num_filters=second_nb_filters, filter_size=second_filter_size, pad=pad, stride=1, flip_filters=False,
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform()
-        )
-
-    # Max-pooling layer of factor 2 in both dimensions:
-    l_mp2 = lasagne.layers.MaxPool2DLayer(l_conv2, pool_size=pool_size)
-    print('INFO: second conv/MP layer: ', l_conv2.output_shape, l_mp2.output_shape)
-
-    if useBN:
-        l_conv3 = lasagne.layers.batch_norm(
-                lasagne.layers.Conv2DLayer(
-                l_mp2, num_filters=third_nb_filters, filter_size=third_filter_size, pad=pad, stride=1, flip_filters=False,
-                # l_mp1, num_filters=64, filter_size=(2, 3),
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform())
-        )
-    else:
-        l_conv3 = lasagne.layers.Conv2DLayer(
-                l_mp2, num_filters=third_nb_filters, filter_size=third_filter_size, pad=pad, stride=1, flip_filters=False,
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform()
-        )
-
-    # Max-pooling layer of factor 2 in both dimensions:
-    l_mp3 = lasagne.layers.MaxPool2DLayer(l_conv3, pool_size=pool_size)
-
-    print('INFO: third conv/MP layer: ', l_conv3.output_shape, l_mp3.output_shape)
-
-    if useBN:
-        l_conv4 = lasagne.layers.batch_norm(
-                lasagne.layers.Conv2DLayer(
-                l_mp3, num_filters=fourth_nb_filters, filter_size=fourth_filter_size, pad=pad, stride=1, flip_filters=False,
-                # l_mp1, num_filters=64, filter_size=(2, 3),
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform())
-        )
-    else:
-        l_conv4 = lasagne.layers.Conv2DLayer(
-                l_mp3, num_filters=fourth_nb_filters, filter_size=fourth_filter_size, pad=pad, stride=1, flip_filters=False,
-                nonlinearity=lasagne.nonlinearities.rectify,
-                W=lasagne.init.GlorotUniform()
-        )
-
-    print('INFO: fourth conv layer: ', l_conv4.output_shape)
-
-    network = lasagne.layers.GlobalPoolLayer(l_conv4, name='post_pool')
-    print('INFO: post Global pool layer: ', network.output_shape)
-
-    if nb_classes == 1:
-        network = lasagne.layers.DenseLayer(network, nb_classes, nonlinearity=lasagne.nonlinearities.sigmoid,
-                             W=lasagne.init.HeNormal(gain=1), name='output')
-    else:
-        network = lasagne.layers.DenseLayer(network, nb_classes, nonlinearity=lasagne.nonlinearities.softmax,
-                         W=lasagne.init.HeNormal(gain=1), name='output')
-
-    print('INFO: output layer: ', network.output_shape)
-
-    # return network, l_conv1, l_mp1, l_conv2, l_mp2, l_dense1, l_dense2, l_dense3
-    # return network, l_conv1, l_mp1, l_conv2, l_mp2, l_dense1
-    return network
-
 
 def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
                    depth=40, first_output=16, growth_rate=12, num_blocks=3,
@@ -342,20 +201,16 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
         pool_size = 2
         pad='same'
 
-    # network = lasagne.layers.Conv2DLayer(network, 8, (7, 25), pad=pad,
-    #                       W=lasagne.init.HeNormal(gain='relu'),
-    #                       b=None, nonlinearity=None, name='prepre_conv')
-    # print('INFO: zeroth conv layer: ', network.output_shape)
-
-
     network = lasagne.layers.Conv2DLayer(network, first_output, first_filter_size, pad=pad,
                           W=lasagne.init.HeNormal(gain='relu'),
                           b=None, nonlinearity=None, name='pre_conv')
     print('INFO: first conv layer: ', network.output_shape)
+
     # note: The authors' implementation does *not* have a dropout after the
     #       initial convolution. This was missing in the paper, but important.
     # if dropout:
     #     network = DropoutLayer(network, dropout)
+
     # dense blocks with transitions in between
     n = (depth - 1) // num_blocks
     for b in range(num_blocks):
@@ -366,6 +221,7 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
             network = transition(network, dropout, filter_size, pool_size,
                                  name_prefix='block%d_trs' % (b + 1))
             print('INFO: transition %d: '%b, network.output_shape)
+
     # post processing until prediction
     network = lasagne.layers.BatchNormLayer(network, name='post_bn')
     network = lasagne.layers.NonlinearityLayer(network, nonlinearity=lasagne.nonlinearities.rectify,
@@ -383,160 +239,7 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
 
     return network
 
-def build_densenet_with_two_inputs(input_shape=(None, 1, 200, 56), input_var=None, input_var2=None, classes=2,
-                   depth=40, first_output=16, growth_rate=12, num_blocks=3,
-                   dropout=0, feature_type='fbank'):
-    """
-    Creates a DenseNet model in Lasagne.
-    Parameters
-    ----------
-    input_shape : tuple
-        The shape of the input layer, as ``(batchsize, channels, rows, cols)``.
-        Any entry except ``channels`` can be ``None`` to indicate free size.
-    input_var : Theano expression or None
-        Symbolic input variable. Will be created automatically if not given.
-    classes : int
-        The number of classes of the softmax output.
-    depth : int
-        Depth of the network. Must be ``num_blocks * n + 1`` for some ``n``.
-        (Parameterizing by depth rather than n makes it easier to follow the
-        paper.)
-    first_output : int
-        Number of channels of initial convolution before entering the first
-        dense block, should be of comparable size to `growth_rate`.
-    growth_rate : int
-        Number of feature maps added per layer.
-    num_blocks : int
-        Number of dense blocks (defaults to 3, as in the original paper).
-    dropout : float
-        The dropout rate. Set to zero (the default) to disable dropout.
-    batchsize : int or None
-        The batch size to build the model for, or ``None`` (the default) to
-        allow any batch size.
-    inputsize : int, tuple of int or None
-    Returns
-    -------
-    network : Layer instance
-        Lasagne Layer instance for the output layer.
-    References
-    ----------
-    .. [1] Gao Huang et al. (2016):
-           Densely Connected Convolutional Networks.
-           https://arxiv.org/abs/1608.06993
-    """
-    if (depth - 1) % num_blocks != 0:
-        raise ValueError("depth must be num_blocks * n + 1 for some n")
-
-    # input and initial convolution
-    network = lasagne.layers.InputLayer(input_shape, input_var, name='input')
-    print('INFO: input layer: ', network.output_shape)
-
-    useBN = True
-    useDropout=False
-
-    l_in_ivec = lasagne.layers.InputLayer(shape=(None, 1, 600), input_var=input_var2)
-
-    n_units1=1000
-    # Convolutional layer with 32 kernels of size 3x5. Strided and padded
-    # convolutions are supported as well; see the docstring.
-    print 'INFO: use BN = ', useBN
-    print 'INFO: input layer i-vectors: ', l_in_ivec.output_shape
-
-    if useBN:
-        if useDropout:
-            p_dropout = 0.05
-            l_dense_ivec = lasagne.layers.batch_norm(
-                    lasagne.layers.DenseLayer(
-                    lasagne.layers.dropout(l_in_ivec, p=p_dropout), num_units=n_units1,
-                    nonlinearity=lasagne.nonlinearities.rectify,
-                    W=lasagne.init.GlorotUniform()))
-        else:
-            l_dense_ivec = lasagne.layers.batch_norm(
-                    lasagne.layers.DenseLayer(
-                    l_in_ivec, num_units=n_units1,
-                    nonlinearity=lasagne.nonlinearities.rectify,
-                    W=lasagne.init.GlorotUniform()))
-    else:
-        if useDropout:
-            p_dropout = 0.05
-            l_dense_ivec = lasagne.layers.DenseLayer(
-                    lasagne.layers.dropout(l_in_ivec, p=p_dropout), num_units=n_units1,
-                    nonlinearity=lasagne.nonlinearities.rectify,
-                    W=lasagne.init.GlorotUniform())
-        else:
-            l_dense_ivec = lasagne.layers.DenseLayer(
-                    l_in_ivec, num_units=n_units1,
-                    nonlinearity=lasagne.nonlinearities.rectify,
-                    W=lasagne.init.GlorotUniform())
-    print 'INFO: ivector dense layer: ', l_dense_ivec.output_shape
-
-
-    if feature_type == 'fbank' or feature_type == 'fbank_d_dd':
-        first_filter_size = 3
-        filter_size = 1
-        dense_block_filter_size = 3
-        pool_size = 2
-        pad='same'
-    elif feature_type == 'fft':
-        first_filter_size = (5, input_shape[3])
-        filter_size = (5, 1)
-        dense_block_filter_size = (5, 1)
-        pool_size = (1, 1)
-        pad='valid'
-    elif feature_type == 'slicedfft':
-        first_filter_size = 3
-        filter_size = 1
-        dense_block_filter_size = 3
-        pool_size = 2
-        pad='valid'
-    elif feature_type == 'mfcc':
-        first_filter_size = 3
-        filter_size = 1
-        dense_block_filter_size = 3
-        pool_size = 2
-        pad='same'
-
-    network = lasagne.layers.Conv2DLayer(network, first_output, first_filter_size, pad=pad,
-                          W=lasagne.init.HeNormal(gain='relu'),
-                          b=None, nonlinearity=None, name='pre_conv')
-    print('INFO: first conv layer: ', network.output_shape)
-    # note: The authors' implementation does *not* have a dropout after the
-    #       initial convolution. This was missing in the paper, but important.
-    # if dropout:
-    #     network = DropoutLayer(network, dropout)
-    # dense blocks with transitions in between
-    n = (depth - 1) // num_blocks
-    for b in range(num_blocks):
-        network = dense_block(network, n - 1, growth_rate, dense_block_filter_size, dropout,
-                              name_prefix='block%d' % (b + 1))
-        print('INFO: dense block %d: '%b, network.output_shape)
-        if b < num_blocks - 1:
-            network = transition(network, dropout, filter_size, pool_size,
-                                 name_prefix='block%d_trs' % (b + 1))
-            print('INFO: transition %d: '%b, network.output_shape)
-    # post processing until prediction
-    network = lasagne.layers.BatchNormLayer(network, name='post_bn')
-    network = lasagne.layers.NonlinearityLayer(network, nonlinearity=lasagne.nonlinearities.rectify,
-                                name='post_relu')
-    network = lasagne.layers.GlobalPoolLayer(network, name='post_pool')
-    print('INFO: post Global pool layer: ', network.output_shape)
-
-    if classes == 1:
-        network = lasagne.layers.DenseLayer([network, l_dense_ivec], classes, nonlinearity=lasagne.nonlinearities.sigmoid,
-                             W=lasagne.init.HeNormal(gain=1), name='output')
-    else:
-        network = lasagne.layers.ConcatLayer([network, l_dense_ivec], axis=1)
-        print('INFO: concat layer: ', network.output_shape)
-
-        network = lasagne.layers.DenseLayer(network, classes, nonlinearity=lasagne.nonlinearities.softmax,
-                         W=lasagne.init.HeNormal(gain=1), name='output')
-
-    print('INFO: output layer: ', network.output_shape)
-
-    return network
-
 def dense_block(network, num_layers, growth_rate, dense_block_filter_size, dropout, name_prefix):
-    # concatenated 3x3 convolutions
     for n in range(num_layers):
         conv = bn_relu_conv(network, channels=growth_rate,
                             filter_size=dense_block_filter_size, dropout=dropout,
