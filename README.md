@@ -32,9 +32,9 @@ python test.py densenet <modelpath> fbank
 ```
 
 ## Model Architecture
-The code builds the following model. It is based on this [recipe](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
+The code builds the following model. It is based on this [recipe.](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
 
-![Model Image](bird_audio_detection_challenge/densenet.png)
+![Model Image](https://github.com/topel/bird_audio_detection_challenge/blob/master/densenet.png)
 
 
 input layer: (None, 1, 200, 56)<br/>
@@ -53,3 +53,4 @@ number of parameters in model: 328004<br/>
 Each dense block corresponds to 5x[BatchNorm - ReLu - Conv3x3]<br/>
 Each transition block corresponds to 1x[Conv1x1 - Max-Pool2x2]<br/>
 
+For any questions, please email me: thomas . pellegrini at irit . fr
