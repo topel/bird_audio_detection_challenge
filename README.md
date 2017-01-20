@@ -1,10 +1,17 @@
 # Entry to the Bird Audio Detection challenge
-based on Densely Connected Convolutional Networks (DenseNets) Theano/Lasagne
+Based on Densely Connected Convolutional Networks (DenseNets) Theano/Lasagne
 
-# About the challenge
-To get information about the BAD challenge, please visit their [Website](http://machine-listening.eecs.qmul.ac.uk/bird-audio-detection-challenge/)
+## About the BAD challenge
+To get information about the challenge, please visit its [Website](http://machine-listening.eecs.qmul.ac.uk/bird-audio-detection-challenge/)
 
-# Usage
+## Requirements
+* Theano (0.9.0.dev3)
+* Lasagne (0.2.dev1)
+* h5py (2.6.0)
+* MIR toolbox for feature extraction with Matlab
+
+
+## Usage
 0. Feature extraction
 
 Features: 56 log-Mel F-BANK coefficients, 58 bands, hop size: 50 ms, frame size: 100 ms, fmin: 50 Hz, fmax: 22050 Hz
@@ -24,21 +31,22 @@ python train.py densenet 30
 python test.py densenet <modelpath> fbank
 ```
 
-# Model Architecture
+## Model Architecture
 This code builds the following model. It is based on this [recipe](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
 
-INFO: input layer: (None, 1, 200, 56)
-INFO: first conv layer: (None, 32, 200, 56)
-INFO: dense block 0: (None, 107, 200, 56)
-INFO: transition 0: (None, 107, 100, 28)
-INFO: dense block 1: (None, 182, 100, 28)
-INFO: transition 1: (None, 182, 50, 14)
-INFO: dense block 2: (None, 257, 50, 14)
-INFO: post Global pool layer: (None, 257)
-INFO: output layer: (None, 2)
-INFO: total number of layers: 74
-INFO: number of parameters in model: 328004
+input layer: (None, 1, 200, 56)<br/>
+first conv layer: (None, 32, 200, 56)<br/>
+dense block 0: (None, 107, 200, 56)<br/>
+transition 0: (None, 107, 100, 28)<br/>
+dense block 1: (None, 182, 100, 28)<br/>
+transition 1: (None, 182, 50, 14)<br/>
+dense block 2: (None, 257, 50, 14)<br/>
+post Global pool layer: (None, 257)<br/>
+output layer: (None, 2)
 
-Each dense block corresponds to 5x[BatchNorm - ReLu - Conv3x3]
-Each transition block corresponds to 1x[Conv1x1 - Max-Pool2x2]
+total number of layers: 74<br/>
+number of parameters in model: 328004<br/>
+
+Each dense block corresponds to 5x[BatchNorm - ReLu - Conv3x3]<br/>
+Each transition block corresponds to 1x[Conv1x1 - Max-Pool2x2]<br/>
 
