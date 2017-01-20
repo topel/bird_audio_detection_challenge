@@ -32,7 +32,10 @@ python test.py densenet <modelpath> fbank
 ```
 
 ## Model Architecture
-This code builds the following model. It is based on this [recipe](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
+The code builds the following model. It is based on this [recipe](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
+
+![Model Image](bird_audio_detection_challenge/densenet.png)
+
 
 input layer: (None, 1, 200, 56)<br/>
 first conv layer: (None, 32, 200, 56)<br/>
