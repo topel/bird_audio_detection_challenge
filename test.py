@@ -1,5 +1,7 @@
-from model_utils import *
 import theano
+import theano.tensor as T
+
+from model_utils import *
 from output_utils import confusion_matrix, save_predictions
 
 from sklearn.metrics import roc_auc_score, roc_curve

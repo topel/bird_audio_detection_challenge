@@ -129,14 +129,14 @@ def main(corpus, train_set, valid_set, train_mean, train_std, useivec, options, 
     best_epoch = -1
     best_params = None
     nb_add_params = 0
-    auc_queue = deque([-1, -1, -1])
+    # auc_queue = deque([-1, -1, -1])
 
     for epoch in range(num_epochs):
 
         # In each epoch, we do a full pass over the training data:
         train_loss = 0
         train_batches = 0
-        auc_queue.popleft()
+        # auc_queue.popleft()
 
         # change learning rate according to schedules
         # if epoch in LR_SCHEDULE:
