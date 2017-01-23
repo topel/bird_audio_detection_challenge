@@ -39,9 +39,9 @@ def augment(batch):
     for i in range(nb_samples):
         x = batch[i]
 
-        # Horizontal flip
-        if randint(0, 1) == 1:
-          x = x[:,:-1,:]
+        # # Horizontal flip
+        # if randint(0, 1) == 1:
+        #   x = x[:,::-1,:]
 
         x_offset = randint(0, 2)
         y_offset = randint(0, 2)
@@ -173,8 +173,8 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
         raise ValueError("depth must be num_blocks * n + 1 for some n")
 
     # input and initial convolution
-    network = lasagne.layers.InputLayer(input_shape, input_var, name='input')
-    print('INFO: input layer: ', network.output_shape)
+    input_layer = lasagne.layers.InputLayer(input_shape, input_var, name='input')
+    print('INFO: input layer: ', input_layer.output_shape)
 
     if feature_type == 'fbank' or feature_type == 'fbank_d_dd' or feature_type == 'fp' or feature_type == 'fp3':
         first_filter_size = 3
@@ -201,7 +201,7 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
         pool_size = 2
         pad='same'
 
-    network = lasagne.layers.Conv2DLayer(network, first_output, first_filter_size, pad=pad,
+    network = lasagne.layers.Conv2DLayer(input_layer, first_output, first_filter_size, pad=pad,
                           W=lasagne.init.HeNormal(gain='relu'),
                           b=None, nonlinearity=None, name='pre_conv')
     print('INFO: first conv layer: ', network.output_shape)
@@ -228,16 +228,18 @@ def build_densenet(input_shape=(None, 1, 200, 56), input_var=None, classes=2,
                                 name='post_relu')
     network = lasagne.layers.GlobalPoolLayer(network, name='post_pool')
     print('INFO: post Global pool layer: ', network.output_shape)
+
+    output_layer_1 = lasagne.layers.DenseLayer(network, classes, nonlinearity=None,
+                             W=lasagne.init.HeNormal(gain=1), name='output-1')
+
     if classes == 1:
-        network = lasagne.layers.DenseLayer(network, classes, nonlinearity=lasagne.nonlinearities.sigmoid,
-                             W=lasagne.init.HeNormal(gain=1), name='output')
+        network = lasagne.layers.NonlinearityLayer(output_layer_1, nonlinearity=lasagne.nonlinearities.sigmoid, name='output')
     else:
-        network = lasagne.layers.DenseLayer(network, classes, nonlinearity=lasagne.nonlinearities.softmax,
-                         W=lasagne.init.HeNormal(gain=1), name='output')
+        network = lasagne.layers.NonlinearityLayer(output_layer_1, nonlinearity=lasagne.nonlinearities.softmax, name='output')
 
     print('INFO: output layer: ', network.output_shape)
 
-    return network
+    return network, input_layer, output_layer_1
 
 def dense_block(network, num_layers, growth_rate, dense_block_filter_size, dropout, name_prefix):
     for n in range(num_layers):
