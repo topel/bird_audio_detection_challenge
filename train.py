@@ -38,7 +38,7 @@ def main(corpus, train_set, valid_set, train_mean, train_std, useivec, options, 
     useBN = True
 
     # depth = num_block * n + 1 for some n
-    network = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
+    network, input_layer, output_layer_1 = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
                    depth=19, first_output=32, growth_rate=15, num_blocks=3,
                    dropout=0, feature_type=feature_type)
 

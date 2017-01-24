@@ -38,19 +38,19 @@ def main(train_corpus, corpusname, test_set, train_mean, train_std, modeldir, op
     useBN = True
     if model == 'densenet':
         if feature_type == 'fbank'  or feature_type == 'slicedfft' or feature_type == 'fbank_d_dd' or feature_type == 'fp' or feature_type == 'fp3':
-            network = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
+            network, input_layer, output_layer_1 = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
                        depth=19, first_output=32, growth_rate=15, num_blocks=3,
                        dropout=0, feature_type=feature_type)
         if feature_type == 'slicedfft':
-            network = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
+            network, input_layer, output_layer_1 = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
                        depth=16, first_output=32, growth_rate=20, num_blocks=3,
                        dropout=0, feature_type=feature_type)
         elif feature_type == 'fft':
-            network = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
+            network, input_layer, output_layer_1 = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
                        depth=11, first_output=32, growth_rate=20, num_blocks=2,
                        dropout=0, feature_type=feature_type)
         elif feature_type == 'mfcc':
-            network = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
+            network, input_layer, output_layer_1 = build_densenet(input_shape=(None, NB_CHANNELS, NB_FRAMES, NB_FEATURES), input_var=input_var, classes=NB_CLASSES,
                        depth=19, first_output=32, growth_rate=15, num_blocks=3,
                        dropout=0, feature_type=feature_type)
     else:
