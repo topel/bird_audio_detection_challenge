@@ -54,7 +54,7 @@ Each dense block corresponds to 5x[BatchNorm - ReLu - Conv3x3]<br/>
 Each transition block corresponds to 1x[Conv1x1 - Max-Pool2x2]<br/>
 
 ## Saliency maps
- To generate saliency maps with guided backprop (based on this [recipe]:(https://github.com/Lasagne/Recipes/blob/master/examples/Saliency))
+ To generate saliency maps with guided backprop (based on this [recipe](https://github.com/Lasagne/Recipes/blob/master/examples/Saliency)):
 ```python
 python saliency_maps.py densenet <modelpath>
 ```
