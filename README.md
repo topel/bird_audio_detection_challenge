@@ -2,7 +2,7 @@
 Based on Densely Connected Convolutional Networks (DenseNets) Theano/Lasagne
 
 ## About the BAD challenge
-To get information about the challenge, please visit its [Website](http://machine-listening.eecs.qmul.ac.uk/bird-audio-detection-challenge/)
+To get information about the challenge, please visit its [Website](http://machine-listening.eecs.qmul.ac.uk/bird-audio-detection-challenge/). The purpose was to propose a solution to the binary classification task of detecting singing birds in 10-s duration audio files. 
 
 ## Requirements
 * Theano (0.9.0.dev3)
@@ -12,20 +12,20 @@ To get information about the challenge, please visit its [Website](http://machin
 
 
 ## Usage
-0. Feature extraction
+
+1- Feature extraction
 
 Features: 56 log-Mel F-BANK coefficients, 58 bands, hop size: 50 ms, frame size: 100 ms, fmin: 50 Hz, fmax: 22050 Hz
-
    * MIR_extract_logSpectrumBands.m: extracts F-BANK coefficients from WAV files
    * create_hdf5_ff1010bird_public.py: creates an HDF5 file with Train, Valid and Test subsets
    
-1. To train a densenet for 30 epochs:
+2- To train a densenet for 30 epochs:
 
 ```python
 python train.py densenet 30
 ```
 
-2. To test a model:
+3- To test a model:
 
 ```python
 python test.py densenet <modelpath> fbank
@@ -52,5 +52,14 @@ number of parameters in model: 328004<br/>
 
 Each dense block corresponds to 5x[BatchNorm - ReLu - Conv3x3]<br/>
 Each transition block corresponds to 1x[Conv1x1 - Max-Pool2x2]<br/>
+
+## Saliency maps
+ To generate saliency maps with guided backprop (based on this [recipe]:(https://github.com/Lasagne/Recipes/blob/master/examples/Saliency))
+```python
+python saliency_maps.py densenet <modelpath>
+```
+Example:
+
+![Model Image](https://github.com/topel/bird_audio_detection_challenge/blob/master/input_possaliency_0056c188-b8a5-46d7-ab1e.png)
 
 For any questions, please email me: thomas . pellegrini at irit . fr
