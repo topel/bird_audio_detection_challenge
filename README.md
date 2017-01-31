@@ -8,6 +8,8 @@ To get information about the challenge, please visit its [Website](http://machin
 * Theano (0.9.0.dev3)
 * Lasagne (0.2.dev1)
 * h5py (2.6.0)
+* scikit-learn (0.17) 
+* fuel (0.2.0)
 * MIR toolbox for feature extraction with Matlab
 
 
@@ -28,8 +30,15 @@ python train.py densenet 30
 3- To test a model:
 
 ```python
-python test.py densenet <modelpath> fbank
+python test.py densenet <model path> <HDF5 datafile path> <CSV id file path>
 ```
+
+Example (the HDF5 data file is not provided in this repo):
+
+```python
+python test.py densenet models/bad16_densenet_bn_static-fbank-0.019326000-sub4.npz hdf5/bad2016test_melLogSpec56.hdf5 hdf5/Test_files.csv
+```
+
 
 ## Model Architecture
 The code builds the following model. It is based on this [recipe.](https://github.com/Lasagne/Recipes/tree/de347e97032569be017cc24319c471de92ac8b40/papers/densenet)
