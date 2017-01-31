@@ -185,15 +185,18 @@ def save_predictions(gtfilename, loss_type, probs, preds, outfile):
     # 2. save preds
     import csv
     with open(outfile, 'w') as csvfile:
-        fieldnames = ['itemid', 'hasbird', 'pred', 'gt']
+        # fieldnames = ['itemid', 'hasbird', 'pred', 'gt']
+        fieldnames = ['itemid', 'hasbird']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         if loss_type == 'categorical_crossentropy':
             for i, id in enumerate(liste_fileids):
-                writer.writerow({'itemid': id, 'hasbird': probs[i, 1], 'pred': preds[i], 'gt': targets[i]})
+                # writer.writerow({'itemid': id, 'hasbird': probs[i, 1], 'pred': preds[i], 'gt': targets[i]})
+                writer.writerow({'itemid': id, 'hasbird': probs[i, 1]})
         elif loss_type == 'binary_hinge' or loss_type == 'binary_crossentropy' or loss_type == 'weighted_binary_crossentropy':
             for i, id in enumerate(liste_fileids):
-                writer.writerow({'itemid': id, 'hasbird': probs[i][0], 'pred': preds[i], 'gt': targets[i]})
+                # writer.writerow({'itemid': id, 'hasbird': probs[i][0], 'pred': preds[i], 'gt': targets[i]})
+                writer.writerow({'itemid': id, 'hasbird': probs[i][0]})
 
     print "INFO: predictions (positive class probas) saved to file:", outfile
 
