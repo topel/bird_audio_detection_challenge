@@ -114,14 +114,33 @@ def run_saliency_maps(network, input_layer, output_layer_1, data, data_filenames
 
     print("Applying saliency_fn...")
     for i in range(data.shape[0]):
-        img = data[i,:,:,:]
-        img = img[np.newaxis,:,:,:]
+        img = data[i]
+        img = img[np.newaxis]
+        img_floatX = lasagne.utils.floatX(img)
         nom = data_filenames[i]
-        saliency, max_class = saliency_fn(img)
+        saliency, max_class = saliency_fn(img_floatX)
         print i, img.shape, nom, saliency.shape
         print 'maps/saliency_%s.npz'%nom
         np.savez('maps/saliency_id%d.npz'%i, saliency)
         show_images(img[0,0,:,:], saliency[0,0,:,:], max_class, "guided backprop", nom)
+
+# def run_saliency_maps(network, input_layer, output_layer_1, data, data_filenames):
+#     # compile the saliency map function, and compute and display the saliency maps
+#     # img: a single input sample
+#
+#     print("Compiling saliency_fn...")
+#     saliency_fn = compile_saliency_function(input_layer, output_layer_1)
+#
+#     print("Applying saliency_fn...")
+#     for i in range(data.shape[0]):
+#         img = data[i,:,:,:]
+#         img = img[np.newaxis,:,:,:]
+#         nom = data_filenames[i]
+#         saliency, max_class = saliency_fn(img)
+#         print i, img.shape, nom, saliency.shape
+#         print 'maps/saliency_%s.npz'%nom
+#         np.savez('maps/saliency_id%d.npz'%i, saliency)
+#         show_images(img[0,0,:,:], saliency[0,0,:,:], max_class, "guided backprop", nom)
 
 def load_model(modeldir, options, model, modelfn, loss_type):
 
@@ -251,7 +270,10 @@ if __name__ == '__main__':
     #         if cpt == nb_input_files:
     #             break
 
-    data_filenames = ['a235ab95-9878-437b-8ed4', '375bf073-e669-46b9-b6cf'] # a235ab95-9878-437b-8ed4,0.29722 hidden bird --- 375bf073-e669-46b9-b6cf,0.317429, fake bird
+    # data_filenames = ['a235ab95-9878-437b-8ed4', '375bf073-e669-46b9-b6cf'] # a235ab95-9878-437b-8ed4,0.29722 hidden bird --- 375bf073-e669-46b9-b6cf,0.317429, fake bird
+    data_filenames = ['a235ab95-9878-437b-8ed4', '375bf073-e669-46b9-b6cf', '006b3059-768e-466f-a66f', '0005ae67-efdc-446f-aeee', '00270340-40d5-4947-9255', '002d0637-e8fb-44a8-916b', '002db260-d9e3-454c-9234', '00321696-0d20-4715-8d89', '00346b3a-9553-4902-8830', '00356818-1324-481c-95ec', '0036e9e0-7075-46f2-9fa1', '003bc57f-22a1-45ce-9105', '007d39bf-968e-483e-a346', '00832ad8-cdaa-4210-965f' ]
+    # a235ab95-9878-437b-8ed4,0.29722 hidden bird --- 375bf073-e669-46b9-b6cf,0.317429, fake bird
+
     data = []
     for id in data_filenames:
         data.append(load_a_single_sample(id, fbankdir))

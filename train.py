@@ -5,6 +5,7 @@ import theano.tensor as T
 import time
 from model_utils import *
 import lasagne
+import os
 
 from sklearn.metrics import roc_auc_score, roc_curve
 from output_utils import confusion_matrix
