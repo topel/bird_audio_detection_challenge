@@ -6,7 +6,7 @@ from output_utils import confusion_matrix, save_predictions
 
 from sklearn.metrics import roc_auc_score, roc_curve
 
-def main(train_corpus, corpusname, test_set, train_mean, train_std, modeldir, options, nb_samples, csvfile, model, modelfn, loss_type):
+def main(train_corpus, corpusname, test_set, modeldir, options, nb_samples, csvfile, model, modelfn, loss_type):
 
     NB_CHANNELS, NB_FRAMES, NB_FEATURES, NB_CLASSES, BATCH_SIZE, removeMean, divideStd, TEST_LABELS, doAugment, feature_type = options['NB_CHANNELS'], \
                                                                            options['NB_FRAMES'], \
@@ -185,15 +185,13 @@ def main(train_corpus, corpusname, test_set, train_mean, train_std, modeldir, op
 if __name__ == '__main__':
     '''
     $ source ../env2/bin/activate
-    $ nohup python test.py simpleresidual best/simpleresidual-28oct1225/bad16_simpleresidual_bn_static-F-BANK.npz
+    $ python test.py densenet models/bad16_densenet_bn_static-fbank-0.019326000-sub4.npz hdf5/
     '''
 
     if ('--help' in sys.argv) or ('-h' in sys.argv):
         print("Tests a neural network on Bird data using Lasagne.")
-        print("Usage: %s [MODEL [FILENAME]]" % sys.argv[0])
+        print("Usage: %s [model_type [model_path [hdf5_file_path [csv_file_path]]]]" % sys.argv[0])
         print()
-        print("MODEL: 'cnn', 'simpleresidual', 'residual'.")
-        print("FILENAME: model path")
     else:
         kwargs = {}
         if len(sys.argv) > 1:
@@ -201,89 +199,18 @@ if __name__ == '__main__':
         if len(sys.argv) > 2:
             kwargs['filename'] = sys.argv[2]
         if len(sys.argv) > 3:
-            feature_type = sys.argv[3]
-        # if len(sys.argv) > 4:
-        #     kwargs['loss_type'] = sys.argv[4]
+            hdf5filename = sys.argv[3]
+        if len(sys.argv) > 4:
+            csvfile = sys.argv[4]
 
 
-    useAugmentedTrain=False
-    useZCA=False
-    cavaco = False
-
-    if len(sys.argv) < 4:
-        feature_type='fbank'
-        # feature_type='fbank_d_dd'
-        # feature_type='fft'
-        # feature_type='mfcc'
-        # feature_type='slicedfft'
-        # feature_type='ivec'
-        # feature_type='ivecsd'
-        # feature_type='fp'
-
+    feature_type='fbank'
     print 'INFO: features = ', feature_type
 
     subset = 'Test'
-    # subset='Train'
-    # subset='Valid'
-
-    # corpus = 'ff1010bird' # corpus de test
-    # corpus='warblrb10k_public'# corpus de test
     corpus='bad2016test'# corpus de test
-    # corpus='ff1010bird_warblrb10k_public'# corpus de test
 
-    # train_corpus = 'ff1010bird' # corpus de train
-    # train_corpus = 'warblrb10k_public'
     train_corpus='Train_Test_ff1010bird_warblrb10k_public'
-    if corpus == 'bad2016test':
-        csv_files_corpus=corpus
-    else:
-        csv_files_corpus='ff1010bird_warblrb10k_public'
-
-    if corpus == 'bad2016test' and feature_type != 'fbank' and feature_type != 'fbank_d_dd':
-        raise Exception("ERROR: with bad2016test, only fbank available fo now!")
-
-    subset_for_centering_data = 'Train'
-    # subset_for_centering_data = 'Valid'
-    # subset_for_centering_data = 'Test'
-
-    corpusdir='/baie/corpus/BAD2016'
-    hdf5dir=corpusdir + '/hdf5'
-    corpusdir += '/' + corpus
-    mean_file  = hdf5dir + '/mean_' + subset_for_centering_data + '_' + train_corpus + '_' + feature_type + '.pkl'
-
-    if feature_type=='fbank':
-        if corpus == 'ff1010bird_warblrb10k_public':
-            hdf5filename=hdf5dir + '/%s_'%(subset) + corpus + '_melLogSpec56.hdf5'
-        elif corpus == 'bad2016test':
-            hdf5filename=hdf5dir + '/' + corpus + '_melLogSpec56.hdf5'
-        else:
-            hdf5filename = hdf5dir + '/Test_ff1010bird_warblrb10k_public_melLogSpec56.hdf5'
-
-        AugmentedTrain_hdf5filename=hdf5dir + '/AugmentedTrain_' + corpus + '_melLogSpec58.hdf5'
-        hdf5ZCAfilename = hdf5dir + '/' + corpus + '_melLogSpec56_ZCA_gcn50.hdf5'
-        mean_file=None
-    elif feature_type=='fbank_d_dd':
-        hdf5filename=hdf5dir + '/' + corpus + '_melLogSpec56deltas.hdf5'
-        mean_file=None
-    elif feature_type=='fp':
-        hdf5filename=hdf5dir + '/' + corpus + '_fp192x200.hdf5'
-        test_valid_hdf5filename=None
-        mean_file=hdf5dir + '/mean_' + subset_for_centering_data + '_' + train_corpus + '_' + feature_type + '192x200.pkl'
-    elif feature_type=='fp3':
-        hdf5filename=hdf5dir + '/' + corpus + '_fp132x132x3.hdf5'
-        mean_file=None
-    elif feature_type=='ivec':
-        hdf5filename=hdf5dir + '/' + train_corpus + '_ivectors.hdf5'
-        mean_file=None
-    elif feature_type=='ivecsd':
-        hdf5filename=hdf5dir + '/' + train_corpus + '_ivectors_sddeltas.hdf5'
-        mean_file=None
-    elif feature_type=='fft':
-        hdf5filename=hdf5dir + '/' + corpus + '_fft430x512.hdf5'
-    elif feature_type=='slicedfft':
-        hdf5filename=hdf5dir + '/' + corpus + '_fftXx21x512.hdf5'
-    elif feature_type=='mfcc':
-        hdf5filename=hdf5dir + '/' + corpus + '_mfcc13.hdf5'
 
     from config import set_options
     options = set_options(feature_type)
@@ -295,45 +222,15 @@ if __name__ == '__main__':
 
     from fuel.datasets.hdf5 import H5PYDataset
 
-
-    if feature_type == 'ivec':
-        test_set = H5PYDataset(hdf5filename, which_sets=('%s_%s'%(corpus, subset),))
-    else:
-        test_set = H5PYDataset(hdf5filename, which_sets=(subset,))
-
-    if feature_type == 'slicedfft':
-        csvfile = corpusdir + '/%s_%s_files.csv'%(subset, feature_type)
-    elif feature_type == 'fbank' and corpus != 'bad2016test':
-        csvfile = '/baie/corpus/BAD2016/%s/%s_ff1010bird_warblrb10k_public_files.csv'%(csv_files_corpus, subset)
-    else:
-        csvfile = corpusdir + '/%s_files.csv'%subset
+    test_set = H5PYDataset(hdf5filename, which_sets=(subset,))
 
     print("nb samples: %d"% test_set.num_examples)
 
-    if options['CENTER_DATA']:
-        print 'INFO: mean_file :', mean_file
-    else:
-        print 'INFO: no centering'
-
-    # load mean image
-    if mean_file is not None:
-        import cPickle as pickle
-        h = open(mean_file , 'r')
-        train_stats = pickle.load(h)
-        train_mean = train_stats['moyenne']
-        train_std = train_stats['ecart_type']
-        h.close()
-    else:
-        train_mean = None
-        train_std = None
-
     from os.path import dirname
-    import cPickle as pickle
     modeldir = dirname(kwargs['filename'])
 
-    main(train_corpus, corpus, test_set, train_mean, train_std, modeldir, options, test_set.num_examples, csvfile, model=kwargs['model'],
+    main(train_corpus, corpus, test_set, modeldir, options, test_set.num_examples, csvfile, model=kwargs['model'],
          modelfn=kwargs['filename'], loss_type=options["LOSS"])
-    # sed '1d' preds/ff1010bird_probs.csv | awk -F',' '$3==$4{cpt++}END{print cpt, NR, cpt/NR*100}'
 
     outfile=modeldir + '/%s_%s_%s_%s_%s_%s_probs.csv'%(train_corpus, 'Train', corpus, subset, feature_type, kwargs['model'])
 
