@@ -110,6 +110,9 @@ def main(train_corpus, corpusname, test_set, modeldir, options, nb_samples, csvf
     loss = loss.mean()
     acc = acc.mean()
 
+    train_mean = None
+    train_std = None
+
     if TEST_LABELS:
         test_fn = theano.function([input_var, target_var], [loss, acc, probas, predictions])
         test_err, acc, test_batches, test_pred_probs, test_pred, test_gt = test_model(test_set, train_mean, train_std, removeMean, divideStd,
