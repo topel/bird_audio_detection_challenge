@@ -71,4 +71,8 @@ Example:
 
 ![Model Image](https://github.com/topel/bird_audio_detection_challenge/blob/master/input_possaliency_0056c188-b8a5-46d7-ab1e.png)
 
-For any questions, please email me: thomas . pellegrini at irit . fr
+For any questions, please email me: thomas.pellegrini@irit.fr
+
+If you use this code, please consider citing my paper:
+
+T. Pellegrini. Densely Connected CNNs for Bird Audio Detection. In Proc. European Signal and Image Processing Conference (EUSIPCO 2017), EURASIP, pp. 1734-1738, September 2017, Kos
